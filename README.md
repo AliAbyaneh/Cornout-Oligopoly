@@ -1,0 +1,1 @@
+# Cornout-Oligopoly
