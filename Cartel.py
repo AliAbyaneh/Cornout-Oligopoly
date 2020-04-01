@@ -43,7 +43,7 @@ class Cartel(object):
         plt.ylabel(r'$B_{i}(S_{-i})$')
         plt.show()
 
-    def play_game(self, rounds = 10000):
+    def play_game(self, rounds = 3000):
         production_history = []
         inverse_demand_history = []
         for round in range(rounds):
@@ -65,7 +65,8 @@ class Cartel(object):
         plt.show()
         fig, ax = plt.subplots()
         fig.set_size_inches(12, 8, forward=True)
-        ax.plot(np.arange(rounds), inverse_demand_history, title="Inverse Demenad Function")
+        ax.plot(np.arange(rounds), inverse_demand_history)
+        plt.title("Inverse Demenad Function")
         plt.xlabel("Inverse Demand")
         plt.ylabel("Time")
         plt.show()

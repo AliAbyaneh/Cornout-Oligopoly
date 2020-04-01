@@ -2,7 +2,7 @@ import numpy as np
 import scipy.stats as stats
 from scipy.stats import rv_continuous
 from ProductionCost import VariableProductionCost
-
+from ProductionCostEstimator import ProductionCostEstimator
 class gaussian_gen(rv_continuous):
     '''Gaussian distribution'''
 
@@ -28,8 +28,11 @@ class Firm(object):
         self.revisionary = False
         self.revisionary_counter = 0
         self.cournout_equilibrium_plevel = cournout_equilibrium_plevel
+        self.estimator = ProductionCostEstimator()
+        self.unit_cost = max(self.production_cost,self.production_cost + (self.estimator.Kalman_Filter())/5)
 
     def play_next_round(self, round):
+        self.unit_cost = max(self.production_cost,self.production_cost + (self.estimator.Kalman_Filter())/20)
         if round > 0 and self.revisionary is False:
             if (self.inverse_demand_history[-1]) < self.trigger_price:
                 self.revisionary = True
@@ -41,13 +44,12 @@ class Firm(object):
                 self.revisionary_counter += 1
                 self.production_history.append(self.cournout_equilibrium_plevel)
                 return self.cournout_equilibrium_plevel
-        if round % 100 == 0:
-            if round > 10:
-                print(self.cost_history)
-                param = stats.norm.fit(self.cost_history)
-                self.cost_dist = None
-                self.cost_dist = stats.norm(loc=float(param[0]), scale=float(param[1]))
-            self.optimal_production = self.dynamic_program_solver()
+        if round > 10:
+
+            param = stats.norm.fit(self.cost_history)
+            self.cost_dist = None
+            self.cost_dist = stats.norm(loc=float(param[0]), scale=float(param[1]))
+        self.optimal_production = self.dynamic_program_solver()
 
         self.add_production_level(self.optimal_production)
         return self.optimal_production
@@ -92,7 +94,7 @@ class Firm(object):
 
 
     def delta_i(self, r, r_i = 0):
-        return r*(self.expected_price(r+r_i) - max(self.production_cost,0*self.var_produc_cost.estimate_unit_cost(r)))
+        return r*(self.expected_price(r+r_i) - max(self.production_cost,self.production_cost + abs(self.estimator.Kalman_Filter())))
 
     def best_response(self, r_i):
         """
@@ -101,7 +103,7 @@ class Firm(object):
         search_dimension = 100
         V = np.zeros(search_dimension)
         for r in range(1, search_dimension):
-            V[r] = r*(max(self.production_cost,(20*self.players - r - r_i)) -max(self.production_cost,0*self.var_produc_cost.estimate_unit_cost(r)))
+            V[r] = r*(max(self.production_cost,(20*self.players - r - r_i)) - self.unit_cost)
         # print(V)
         return np.argmax(V)
 
