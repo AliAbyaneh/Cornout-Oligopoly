@@ -43,7 +43,7 @@ class Cartel(object):
         plt.ylabel(r'$B_{i}(S_{-i})$')
         plt.show()
 
-    def play_game(self, rounds = 10):
+    def play_game(self, rounds = 1000):
         production_history = []
         inverse_demand_history = []
         for round in range(rounds):
