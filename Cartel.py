@@ -43,7 +43,7 @@ class Cartel(object):
         plt.ylabel(r'$B_{i}(S_{-i})$')
         plt.show()
 
-    def play_game(self, rounds = 3000):
+    def play_game(self, rounds = 10):
         production_history = []
         inverse_demand_history = []
         for round in range(rounds):
@@ -57,7 +57,7 @@ class Cartel(object):
             inverse_demand = np.abs(self.cost_dist.rvs(1))*max(10, 20*self.number_of_firms - accumulative_production)#(np.abs(self.cost_dist.rvs(1))/np.sqrt((10*accumulative_production/self.number_of_firms)))
             # print(inverse_demand)
             for firm in self.firms:
-                firm.add_cost(inverse_demand)
+                firm.add_cost(inverse_demand, accumulative_production)
             inverse_demand_history.append(inverse_demand)
 
         fig, ax = plt.subplots()
@@ -69,6 +69,30 @@ class Cartel(object):
         plt.title("Inverse Demenad Function")
         plt.xlabel("Inverse Demand")
         plt.ylabel("Time")
+        plt.show()
+
+        t = np.arange(len(self.firms[0].utility_history))
+        print(self.firms[0].utility_history)
+        plt.subplot(221)
+        plt.plot(t, self.firms[0].utility_history)
+        plt.title("Firm 1")
+        plt.xlabel("Time")
+        plt.ylabel("$")
+        plt.subplot(222)
+        plt.plot(t, self.firms[1].utility_history)
+        plt.title("Firm 2")
+        plt.xlabel("Time")
+        plt.ylabel("$")
+        plt.subplot(223)
+        plt.plot(t, self.firms[2].utility_history)
+        plt.title("Firm 3")
+        plt.xlabel("Time")
+        plt.ylabel("$")
+        plt.subplot(224)
+        plt.plot(t, self.firms[3].utility_history)
+        plt.title("Firm 4")
+        plt.xlabel("Time")
+        plt.ylabel("$")
         plt.show()
 
 if __name__ == "__main__":

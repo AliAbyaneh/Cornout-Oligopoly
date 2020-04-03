@@ -29,10 +29,16 @@ class Firm(object):
         self.revisionary_counter = 0
         self.cournout_equilibrium_plevel = cournout_equilibrium_plevel
         self.estimator = ProductionCostEstimator()
-        self.unit_cost = max(self.production_cost,self.production_cost + (self.estimator.Kalman_Filter())/5)
+        self.unit_cost = max(self.production_cost,self.production_cost + (self.estimator.Kalman_Filter())/20)
+        self.utility_history = []
+        self.cartel_production_history = []
+
 
     def play_next_round(self, round):
         self.unit_cost = max(self.production_cost,self.production_cost + (self.estimator.Kalman_Filter())/20)
+        if round > 0:
+            self.utility_history.append(
+                    self.delta_i(self.production_history[-1], self.cartel_production_history[-1] - self.production_history[-1]))
         if round > 0 and self.revisionary is False:
             if (self.inverse_demand_history[-1]) < self.trigger_price:
                 self.revisionary = True
@@ -44,7 +50,7 @@ class Firm(object):
                 self.revisionary_counter += 1
                 self.production_history.append(self.cournout_equilibrium_plevel)
                 return self.cournout_equilibrium_plevel
-        if round > 10:
+        if round > 10 and round % 10 == 0:
 
             param = stats.norm.fit(self.cost_history)
             self.cost_dist = None
@@ -54,9 +60,10 @@ class Firm(object):
         self.add_production_level(self.optimal_production)
         return self.optimal_production
 
-    def add_cost(self, cost):
+    def add_cost(self, cost, total_production = 0):
         self.cost_history.append((cost/max(self.production_cost,(20 - self.production_history[-1])*self.players)))
         self.inverse_demand_history.append(cost)
+        self.cartel_production_history.append(total_production)
 
     def add_production_level(self, p):
         self.production_history.append(p)
@@ -94,7 +101,7 @@ class Firm(object):
 
 
     def delta_i(self, r, r_i = 0):
-        return r*(self.expected_price(r+r_i) - max(self.production_cost,self.production_cost + abs(self.estimator.Kalman_Filter())))
+        return r*(self.expected_price(r+r_i) - self.unit_cost)
 
     def best_response(self, r_i):
         """
